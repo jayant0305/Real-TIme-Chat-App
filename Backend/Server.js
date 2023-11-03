@@ -5,6 +5,9 @@ dotenv.config();
 const PORT=process.env.PORT||5000;
 
 App.get('/api/chat',(req,res)=>{
+    res.send({
+        message:"Hello World"
+    })
     console.log(req.params.id);
 })
 App.get('/api/chat/:id',(req,res)=>{
