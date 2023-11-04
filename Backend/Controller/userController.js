@@ -18,7 +18,7 @@ const registerUser=asyncHandler(async (req,res)=>{
     const newUser=await User.create({
         name:name,
         email:email,
-        password:password,
+        password,
         profileImage:pic
     })
     if(newUser){
@@ -29,7 +29,6 @@ const registerUser=asyncHandler(async (req,res)=>{
             profileImage:newUser.profileImage,
             token:generateToken(newUser.id)
         })
-        console.log("DONE")
     }
     else{
         res.status(400)
@@ -40,15 +39,16 @@ const registerUser=asyncHandler(async (req,res)=>{
 
 
 const authUser=asyncHandler(async(req,res)=>{
-    const {name,email,password}=req.body
+    const {email,password}=req.body
     const userExists = await User.findOne({email:email})
-    if(userExists && (await User.MatchPassword(password))) {
+    console.log(await userExists.MatchPassword(password))
+    if(userExists && await userExists.MatchPassword(password)) {
         res.json({
-            _id:newUser._id,
-            name:newUser.name,
-            email:newUser.email,
-            profileImage:newUser.profileImage,
-            token:generateToken(newUser.id)
+            _id:userExists._id,
+            name:userExists.name,
+            email:userExists.email,
+            profileImage:userExists.profileImage,
+            token:generateToken(userExists.id)
         })
     }
     else{

@@ -32,17 +32,25 @@ const userSchema=mongoose.Schema(
     }
 )
 
-userSchema.method.MatchPassword=async (enterPassword) => {
-    return await bcrypt.compare(enterPassword,this.password)
+
+//NOTE: DONT USE ARROW FUNCTION IN SCHEMA 
+//(arrow functions do not bind their own this)
+userSchema.methods.MatchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
 }
-userSchema.pre('save',async()=>{
-    const user=this;
-    if(user.isModified('password')){
-        const sale=await bcrypt.genSalt(10)
-        user.password= await bcrypt.hashSync(user.password,10);
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
     }
-    next()
-})
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
 
 const User=mongoose.model("User",userSchema);
 module.exports = User;
