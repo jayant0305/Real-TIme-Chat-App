@@ -3,7 +3,7 @@ const User=require("../Modals/UserSchema")
 const generateToken = require("../config/genrateToken")
 
 const registerUser=asyncHandler(async (req,res)=>{
-    const {name,email,password,pic}=req.body
+    const {name,email,password}=req.body
     if(!name||!email||!password){
         res.status(400)
         throw new Error('Please fill all the fields')
@@ -18,15 +18,13 @@ const registerUser=asyncHandler(async (req,res)=>{
     const newUser=await User.create({
         name:name,
         email:email,
-        password,
-        profileImage:pic
+        password
     })
     if(newUser){
         res.status(201).json({
             _id:newUser._id,
             name:newUser.name,
             email:newUser.email,
-            profileImage:newUser.profileImage,
             token:generateToken(newUser.id)
         })
     }
@@ -56,4 +54,17 @@ const authUser=asyncHandler(async(req,res)=>{
         throw new Error('Invalid credentials')
     }
 })
-module.exports = {registerUser,authUser}
+
+// /api/user?search=jayant
+const allUsers =asyncHandler(async()=>{
+    const keyword=req.query.search?{
+        $or:[
+            {name:{$regex:req.query.search,$options:"i"}},
+            {name:{$regex:req.query.search,$options:"i"}}, //i => case insensitive
+        ],
+    }:{};
+
+    const users=await User.findOne(keyword)
+    res.send(users)
+})
+module.exports = {registerUser,authUser,allUsers}
